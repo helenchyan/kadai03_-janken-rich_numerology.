@@ -1,0 +1,297 @@
+@charset "utf-8";
+
+/* 見た目は最低限。今回の課題はJavaScriptが本体なので、
+   CSSで時間を使わないこと。足したくなったら教程0のCSSを見れば書ける */
+
+body {
+  margin: 0;
+  font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  color: #222222;
+  line-height: 1.8;
+  background: #faf8f5;
+}
+
+.wrapper {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.heading-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.lead {
+  font-size: 14px;
+  color: #707070;
+  margin-bottom: 40px;
+}
+
+/* 入力欄を横に並べる */
+.input-area {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.input-area label {
+  font-size: 14px;
+}
+
+/* 【2026-10-30 変更】HTMLを <input> から <select> に変えたので、
+   セレクタに select を足した。
+
+   前： .input-area input          ← input だけを狙っていた
+   後： .input-area input, .input-area select
+
+   ★ カンマは「または」。2つのセレクタに同じ指定をまとめている。
+   ★ これを足さないと、プルダウンだけ枠線も幅も付かず、
+     ブラウザ既定の小さい見た目のまま残る。
+   ★ input の指定も残してあるのは、あとで入力欄に戻したくなったとき用。 */
+.input-area input,
+.input-area select {
+  display: block;
+  width: 100px;
+  height: 40px;
+  margin-top: 6px;
+  padding: 0 8px;
+  border: 1px solid #bfbfbf;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 16px;
+  text-align: center;
+
+  /* select の初期の見た目（OSごとに違う）を打ち消して、input と揃える。
+     appearance: none だと矢印も消えるので、ここでは外観だけ白にしている */
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.button {
+  display: inline-block;
+  width: 240px;
+  height: 52px;
+  background: #c2563c;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.button:hover {
+  opacity: 0.85;
+}
+
+/* 結果 */
+.result {
+  margin-top: 50px;
+  padding: 40px 30px;
+  background: #ffffff;
+  border-radius: 12px;
+
+  /* 影。「横ずれ 縦ずれ ぼかし 広がり 色」の順。
+     紙が1枚浮いているように見えて、結果が主役だと伝わる */
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 【2026-10-31 追加】12個の説明を全部隠しておく。
+   JS で該当する1つだけ .show() して出す。
+
+   display: none  ＝ その要素を無かったことにする（場所も取らない）
+   ★ visibility: hidden は「見えないが場所は取る」。別物。
+
+   .meaning-0 だけ最初から見えるようにしてある（「ボタンを押してください」）。
+   ボタンを押すと $(".meaning").hide() で一緒に隠れる。 */
+.meaning {
+  display: none;
+}
+
+.meaning-0 {
+  display: block;
+}
+
+.result-number {
+  font-size: 88px;
+  font-weight: bold;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: 0.02em;
+  color: #c2563c; /* 下の .num-N で数字ごとに上書きされる */
+}
+
+.result-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 14px 0 6px;
+  letter-spacing: 0.04em;
+}
+
+/* タイトルの下に短い線を引く。中央に置くため margin: 0 auto */
+.result-title::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin: 14px auto 24px;
+  background: currentColor; /* その要素の文字色と同じ色になる */
+  opacity: 0.3;
+}
+
+
+/* =========================================================
+   【2026-10-31 追加】数字ごとの色
+
+   出典：数秘/ガイド/鑑定リファレンス.html「5 数字そのもののエネルギー」
+   1 レッド／2 ホワイト／3 レモンイエロー／4 エメラルドグリーン／
+   5 ターコイズブルー／6 ピンク＆スカイブルー／7 パープル／
+   8 ゴールド／9 オリーブ
+   ★ 11・22・33 は資料に色の定義が無いので、こちらで決めた（仮）
+
+   ■ しくみ
+     JS で $(".result-number").addClass("num-" + sun) とクラスを足すと、
+     下の .num-5 などが当たって色が変わる。
+     ★ ".meaning-" + sun と同じ、文字列を組み立ててクラス名を作るやり方。
+
+   ★ 2（ホワイト）はそのままだと白で読めないので、
+     グレー寄りに振ってある。
+   ========================================================= */
+
+.num-1  { color: #d6453c; } /* レッド */
+.num-2  { color: #8a8a8a; } /* ホワイト → 読めるようグレーに */
+.num-3  { color: #e0b020; } /* レモンイエロー */
+.num-4  { color: #2f9e7e; } /* エメラルドグリーン */
+.num-5  { color: #2fa5a8; } /* ターコイズブルー */
+.num-6  { color: #e07a9a; } /* ピンク */
+.num-7  { color: #8257c5; } /* パープル */
+.num-8  { color: #c99a2e; } /* ゴールド */
+.num-9  { color: #7a8c3a; } /* オリーブ */
+.num-11 { color: #5b6fc9; } /* 仮 */
+.num-22 { color: #b5452f; } /* 仮 */
+.num-33 { color: #c2569a; } /* 仮 */
+
+.result-text {
+  font-size: 15px;
+  margin: 0 0 24px;
+  text-align: center; /* 短い一文なので中央ぞろえ。下の2ボックスは長いので左のまま */
+  line-height: 1.9;
+}
+
+/* 【2026-10-31 追加】「力が出るとき」「つまずきやすいとき」の2ブロック */
+.result-strong,
+.result-weak {
+  font-size: 14px;
+  text-align: left;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 6px;
+}
+
+.result-strong {
+  background: #fdf6e8;
+}
+
+.result-weak {
+  background: #f2f2f2;
+}
+
+/* 「力が出るとき」などの小見出し。
+   ★ <span> は意味を持たない inline の箱。
+     文章の一部だけ見た目を変えたいときに使う */
+.label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  color: #707070;
+}
+
+/* 計算の途中経過 */
+.result-calc {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #707070;
+}
+
+/* =========================================================
+   【2026-11-10 追加】リッチver. ― 動きを付ける
+
+   @keyframes 名前 { from { 開始の状態 } to { 終わりの状態 } }
+     ＝ アニメーションの中身を定義する。これだけでは何も起きない
+
+   animation: 名前 時間 イージング;
+     ＝ 定義したアニメーションを、その要素に当てる
+
+   ★ display: none → block に変わった瞬間に再生される。
+     .show() で出したときに、ふわっと現れる
+   ========================================================= */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;              /* 透明。0=見えない、1=見える */
+    transform: translateY(14px); /* 14px下にずらした位置から */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);    /* 本来の位置へ */
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);   /* 0.7倍の大きさから */
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 説明のかたまり全体をふわっと出す */
+.meaning {
+  animation: fadeUp 0.5s ease-out;
+}
+
+/* 数字だけ、少し弾んで出す */
+.result-number {
+  animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* cubic-bezier は動きの速度曲線。
+     3つめの値を1より大きくすると、行き過ぎて戻る＝弾む動きになる */
+}
+
+/* 2つのボックスは、少し遅らせて順番に出す */
+.result-strong {
+  animation: fadeUp 0.5s ease-out 0.15s both;
+}
+
+.result-weak {
+  animation: fadeUp 0.5s ease-out 0.3s both;
+  /* 　　　　　　　  時間   動き方  待つ時間  both
+     both ＝ 待っているあいだも from の状態（透明）を保つ。
+     これが無いと、待ち時間のあいだ一瞬見えてしまう */
+}
+
+/* ボタンの色の変化をなめらかに */
+.button {
+  transition: 0.25s;
+  /* transition ＝ 値が変わるとき、パッと変えずに時間をかけて変える */
+}
+
+.button:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);  /* 少し浮く */
+}
+
+.button:active {
+  transform: translateY(0);     /* 押した瞬間は沈む */
+}

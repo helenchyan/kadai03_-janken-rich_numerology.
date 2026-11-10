@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数秘</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="wrapper">
+      <h1 class="heading-title">数秘術</h1>
+      <p class="lead">生年月日から、あなたの「太陽数（ライフパスナンバー）」を出します。</p>
+
+      <!-- ============================================================
+           【2026-10-30 変更】入力欄を <input> から <select>（プルダウン）に変えた
+
+           ■ 変えたところ
+             <input class="input-year" type="number" />   ← 前
+             <select class="input-year"></select>          ← 後
+
+             タグそのものを input → select に差し替えた。
+             type="number" と placeholder は select には無い属性なので消した。
+
+           ■ 変えていないところ
+             ・<label> で囲む形はそのまま。
+               囲んでおくと「年」の文字をクリックしてもプルダウンが開く。
+             ・class名（input-year / input-month / input-day）もそのまま。
+               → script.js 側を書き換えなくて済む。
+             ・$(".input-year").val() で値が取れるのも同じ。
+               ★取れるのは選ばれた <option> の中身で、やはり「文字列」。
+                 計算に使うときは Number() で数字に変換する。
+
+           ■ <option> について
+             <option>1990</option> のように value を省略すると、
+             表示されている文字がそのまま値になる。
+             value="1990" と書いても同じ結果。今回は省略している。
+
+           ■ 年だけ中身が空になっている理由
+             1930〜2026 を手で書くと97行になるので、script.js で作る。
+             for（繰り返し）で <option> を足していく。教程3の先取り。
+           ============================================================ -->
+      <div class="input-area">
+        <label>
+          年
+          <!-- 中身は script.js で作る。ここは空でよい -->
+          <select class="input-year"></select>
+        </label>
+
+        <label>
+          月
+          <!-- 12個なので手で書く。先頭が最初から選ばれた状態になる -->
+          <select class="input-month">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+          </select>
+        </label>
+
+        <label>
+          日
+          <!-- 31個。月によって日数が違うが、そこまでは今回やらない -->
+          <select class="input-day">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+            <option>13</option>
+            <option>14</option>
+            <option>15</option>
+            <option>16</option>
+            <option>17</option>
+            <option>18</option>
+            <option>19</option>
+            <option>20</option>
+            <option>21</option>
+            <option>22</option>
+            <option>23</option>
+            <option>24</option>
+            <option>25</option>
+            <option>26</option>
+            <option>27</option>
+            <option>28</option>
+            <option>29</option>
+            <option>30</option>
+            <option>31</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- ★「選択してください」のような空の選択肢は、わざと置いていない。
+           置くと、選ばれなかったときに .val() が "" になり、
+           Number("") が 0 になって計算が狂う。
+           先頭が最初から選ばれている状態にしておけば、その事故が起きない。 -->
+
+      <div class="button-area">
+        <button class="button">運命数を出す</button>
+      </div>
+
+      <!-- ============================================================
+           【2026-10-31 変更】説明文をJSの if 分岐ではなく、HTML側に12個置く形にした
+
+           ■ なぜ
+             ・文章を直すときに JS を触らなくて済む（壊す心配がない）
+             ・JS の分岐が12個 → ゼロになる
+
+           ■ しくみ
+             CSS で .meaning を全部 display:none にしておく
+             JS で、該当する1つだけ .show() する
+
+               $(".meaning").hide();            いったん全部隠す
+               $(".meaning-" + sun).show();     該当するものだけ出す
+
+             ★ ".meaning-" + sun は、<option> を作ったときと同じ文字列の連結。
+               sun が 5 なら ".meaning-5" というセレクタが組み立てられる。
+
+           ■ 文章について
+             ★ ここに書いてある説明は仮。自分の言葉に書き直すこと。
+               講義資料の文言をそのまま載せると、スクショで外に出てしまう。
+               セッションで実際に使う言葉にしておくほうが、あとで役に立つ。
+             各数字のポジ／ネガのキーワードは、下のコメントに置いてある
+             （HTMLコメントは画面に出ないので、スクショには写らない）。
+           ============================================================ -->
+      <div class="result">
+        <p class="result-number">?</p>
+
+        <!-- 最初に出すもの。ボタンを押すと隠れる -->
+        <div class="meaning meaning-0">
+          <p class="result-title">—</p>
+          <p class="result-text">生年月日を選んで、ボタンを押してください</p>
+        </div>
+
+        <div class="meaning meaning-1">
+          <p class="result-title">リーダー</p>
+          <p class="result-text">先頭に立って、最初の一歩を踏み出す人。方向を決めて、人を引っ張ります。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>誰も手をつけていないことを始めるとき。決断を迫られる場面。人の前に立って旗を振るとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>自分で決めて進むのが速いぶん、人の意見を聞かずに走ってしまいます。思うように進まないと、まわりに強く当たることがあります。</p>
+        </div>
+
+        <div class="meaning meaning-2">
+          <p class="result-title">サポーター</p>
+          <p class="result-text">人と人のあいだに立って、場をまとめる人。相手の話を受け止めます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>誰かを支える役割のとき。対立しているあいだに入るとき。細やかな気配りが要る場面。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>受け止めすぎて、自分の希望を後回しにします。我慢が積み重なって、急に限界が来ることがあります。</p>
+        </div>
+
+        <div class="meaning meaning-3">
+          <p class="result-title">子ども</p>
+          <p class="result-text">思いついたことをすぐ形にする人。人を楽しませます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>新しいアイデアを出すとき。場の空気を明るくするとき。人を巻き込んで何かを始めるとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>興味が移りやすく、始めたものを置いたままにします。うまくいかないと、言い訳をして離れたくなります。</p>
+        </div>
+
+        <div class="meaning meaning-4">
+          <p class="result-title">堅実家</p>
+          <p class="result-text">決めたことを最後まで続ける人。土台をつくって守ります。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>手順を整えるとき。品質を落とさず続けるとき。人が面倒がる作業を引き受けるとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>やり方が固まると、変えることに強く抵抗します。「正しさ」で人を裁いてしまうことがあります。</p>
+        </div>
+
+        <div class="meaning meaning-5">
+          <p class="result-title">自由人</p>
+          <p class="result-text">動きながら覚えていく人。新しい場所にも人にも早くなじみます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>変化の多い場面。情報を集めて人をつなぐとき。すぐ動く必要があるとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>飽きるのが早く、同じ場所に留まるのが苦しくなります。気分の波が大きく、まわりが振り回されることがあります。</p>
+        </div>
+
+        <div class="meaning meaning-6">
+          <p class="result-title">博愛主義者</p>
+          <p class="result-text">まわりの人の面倒を見る人。相手の状態に先に気づきます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>人を育てるとき。場の居心地を整えるとき。困っている人に手を出すとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>抱え込みすぎて、相手が自分で立つ機会を奪います。返ってこないと「こんなにやったのに」と苦しくなります。</p>
+        </div>
+
+        <div class="meaning meaning-7">
+          <p class="result-title">個人主義者</p>
+          <p class="result-text">ひとりで深く掘り下げる人。納得するまで調べます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>専門性が要るとき。ひとりで集中できる環境。質を突き詰めるとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>説明せずに進めるので、何を考えているか見えません。人に頼らず抱えて、孤立することがあります。</p>
+        </div>
+
+        <div class="meaning meaning-8">
+          <p class="result-title">情熱家</p>
+          <p class="result-text">規模を大きくしていく人。人を巻き込んで数字を伸ばします。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>目標があるとき。競争がある場面。人を動かして形にするとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>勝ち負けにこだわりすぎて、まわりに厳しくなります。走り続けて、止まり方が分からなくなります。</p>
+        </div>
+
+        <div class="meaning meaning-9">
+          <p class="result-title">平和主義者</p>
+          <p class="result-text">全体を見て、ちょうどいいところに収める人。人の事情を汲みます。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>利害がぶつかる場面。全体を見て調整するとき。人の相談に乗るとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>本音を言わずに合わせ続けて、あとで疲れが出ます。理屈で人を遠ざけることがあります。</p>
+        </div>
+
+        <div class="meaning meaning-11">
+          <p class="result-title">神のメッセンジャー</p>
+          <p class="result-text">人より先に気づいて、言葉にする人。空気や相手の変化を細かく拾います。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>言葉や表現を扱うとき。人の心に触れる場面。直感で方向を選ぶとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>根拠を説明できず、自分でも確信が持てなくなります。まわりの影響を受けすぎて消耗します。</p>
+        </div>
+
+        <div class="meaning meaning-22">
+          <p class="result-title">カリスマ</p>
+          <p class="result-text">大きな理想を、現実の形にする人。人を集めて動かします。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>ゼロから大きなものを立ち上げるとき。長い時間をかけて形にするとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>自分のやり方を通すので、合わない相手とぶつかります。背負いすぎて、極端に振れることがあります。</p>
+        </div>
+
+        <div class="meaning meaning-33">
+          <p class="result-title">人類愛の奉仕者</p>
+          <p class="result-text">損得を考えずに人に与える人。一緒にいる人を明るくします。</p>
+          <p class="result-strong"><span class="label">力が出るとき</span>場の空気を変えるとき。枠にとらわれない発想が要るとき。</p>
+          <p class="result-weak"><span class="label">つまずきやすいとき</span>細かい段取りが抜けやすく、まわりが尻拭いします。与えすぎて、自分が空になります。</p>
+        </div>
+      </div>
+
+      <!-- 途中の計算を見せる場所。デバッグ用に作ったが、
+           「どう計算したか」を見せると鑑定として説得力が出るので残してもよい -->
+      <p class="result-calc"></p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
